@@ -1,0 +1,6 @@
+# requirements such as third party libraries
+
+questionary # for CLI interaction
+pytest # for testing the project
+
+
