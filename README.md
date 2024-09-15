@@ -1,10 +1,15 @@
 # My Habit Tracker App
 
-A description of what the project app
+This project provides the basic functionality of a habit tracker. 
 
 ## What is it?
 
-Text
+Users are able to create weekly and daily habits, that can be checked-off at any time.
+If the habit is not completed during the specified period, one day for daily habits or seven days 
+for weekly habits, the streak is broken. 
+The application includes an analytics module, allowing users to analyse their habits. 
+Data is saved and loaded with sqlite3. Users interact with the Command Line Interface via Questionary.
+
 
 ## Installation
 
