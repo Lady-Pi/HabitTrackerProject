@@ -1,70 +1,67 @@
+from datetime import datetime
+
 class Habit:
-    """
-    The Habit class represents an individual habit that the user wants to track.
-    """
-
     def __init__(self, name: str, description: str, periodicity: str):
-        """
-        Initializes a new habit with a name, description, and periodicity
+        """Create a new Habit with the given name, description, and periodicity."""
+        self._name = name
+        self._description = description
+        self._periodicity = periodicity  # 'daily' or 'weekly'
+        self._creation_date = datetime.now()
+        self._completions = []  # A list of dates when the habit was marked complete.
 
-        Arguments:
-            name (str): The name of the habit.
-            description (str): A description of the habit.
-            periodicity (str): Can be 'daily' or 'weekly'.
-        """
-        self.name = name
-        self.description = description
-        self.periodicity = periodicity
-        self.streak = 0
-        self.completed_dates = []
+    # Getter methods to access non-public attributes
+    def get_name(self):
+        return self._name
 
-    def check_off(self):
-        """Marks the habit as completed and updates the streak."""
-        from datetime import datetime
-        self.completed_dates.append(datetime.now())
-        self.update_streak()
+    def get_description(self):
+        return self._description
 
-    def update_streak(self):
-        """
-        Updates the streak based on the last completion date.
-        The streak only increases if the habit is completed on consecutive days or weeks.
-        """
-        from datetime import timedelta
+    def get_periodicity(self):
+        return self._periodicity
 
-        if not self.completed_dates:
-            self.streak = 0
-            return
+    def get_creation_date(self):
+        return self._creation_date
 
-        # Sort the completion dates in order to compare consecutive streaks
-        self.completed_dates.sort()
+    def get_completions(self):
+        """Return the list of completion dates."""
+        return self._completions
 
-        last_date = self.completed_dates[-1]
-        streak = 1  # Start with a streak of 1 for the last completed date
+    def complete_habit(self):
+        """Marks a habit as complete by adding the current date to the completions list."""
+        self._completions.append(datetime.now())
 
-        # Iterate through the previous dates and check for consecutive days/weeks depending on periodicity
-        for i in range(len(self.completed_dates) - 2, -1, -1):
-            previous_date = self.completed_dates[i]
+    def streak(self) -> int:
+        """Calculate the streak of consecutive completions."""
+        if not self.get_completions():
+            return 0
 
-            if self.periodicity == 'daily':
-                # For daily habits, check if the previous completion is exactly 1 day before
-                if last_date - previous_date == timedelta(days=1):
+        # Initialize the streak counter
+        streak = 1
+
+        # Sort the completion dates in ascending order
+        completions = self.get_completions()
+        completions.sort()
+
+        # Compare each completion date to the one before it
+        for i in range(1, len(completions)):
+            current = completions[i]
+            previous = completions[i - 1]
+            # For daily habits, check if the current completion is exactly 1 day after the previous completion
+            # If it is consecutive, increase the streak. If it is broken, reset the streak to 1
+            if self.get_periodicity() == "daily":
+                if (current - previous).days == 1:
                     streak += 1
-                    last_date = previous_date  # Move back to the previous date
                 else:
-                    break  # If a day is missed, the streak is broken
-
-            elif self.periodicity == 'weekly':
-                # For weekly habits, check if the previous completion was within 7 days
-                if last_date - previous_date <= timedelta(days=7):
+                    streak = 1
+            # For weekly habits, check if the completion is within 7 days after the previous completion.
+            # If within a week, increase the streak. If more than 7 days passed, reset the streak to 1.
+            elif self.get_periodicity() == "weekly":
+                if (current - previous).days <= 7:
                     streak += 1
-                    last_date = previous_date  # Move back to the previous date
                 else:
-                    break  # If more than 7 days have passed, the streak is broken
+                    streak = 1
 
-        self.streak = streak
-
-    def __str__(self):
-        return f"{self.name}: {self.description} (Streak: {self.streak})"
+        return streak
 
 
 

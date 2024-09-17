@@ -1,122 +1,76 @@
-import questionary
-import sqlite3
-from db import get_db
+import questionary # used to ask the user for input
 from habit_tracker import HabitTracker
+from habit import Habit
+from db import Database
+from datetime import datetime
 
+# Create HabitTracker and Database instances
+tracker = HabitTracker()
+db = Database()
 
-def add_predefined_habits(db, tracker):
-    """
-    Adds predefined habits to the tracker when the program starts.
+# On startup, load existing habits from the database and add them to the HabitTracker
+for habit_data in db.load_habits():
+    habit = Habit(habit_data['name'], habit_data['description'], habit_data['periodicity'])
+    habit._creation_date = datetime.strptime(habit_data['creation_date'], "%Y-%m-%d %H:%M:%S")
+    habit._completions = [datetime.strptime(date, "%Y-%m-%d %H:%M:%S") for date in habit_data['completions']]
+    tracker.add_habit(habit)
 
-    Args:
-        db (sqlite3.Connection): The database connection.
-        tracker (HabitTracker): The HabitTracker instance.
-    """
-    predefined_habits = [
-        ("Meditation", "Daily meditation for mindfulness", "daily"),
-        ("Reading", "Read for 30 minutes", "daily"),
-        ("Practice Guitar", "Practice playing the guitar", "weekly"),
-        ("Practice Yoga", "Practice yoga ", "weekly"),
-        ("Walk", "Go for an outside walk", "daily")
-    ]
-    for name, description, periodicity in predefined_habits:
-        try:
-            tracker.add_habit(db, name, description, periodicity)
-        except Exception as e:
-            print(f"Could not add habit {name}: {e}")
-
-def cli():
-    """
-    Command-line interface (CLI) for interacting with the habit tracker.
-
-    This function allows the user to:
-    - Create a new habit.
-    - Complete an existing habit.
-    - Analyse how many times a habit has been completed.
-    - Exit the application.
-
-    The CLI interacts with the user using the Questionary package,
-    and stores and retrieves habit data using the HabitTracker and database.
-    """
-    # Connect to the production database
-    db = get_db("main.db")
-
-    # Initialize the habit tracker
-    tracker = HabitTracker()
-
-    stop = False
-    while not stop:
-        # Ask the user what they want to do
-        choice = questionary.select(
-            "What do you want to do?",
-            choices=["Create", "Complete Habit", "Analyse", "Exit"]
+# Via Questionary, the user can choose to add, delete, mark habits as complete, view streaks, or exit
+def main():
+    while True:
+        action = questionary.select(
+            "What would you like to do?",
+            choices=[
+                "Add Habit",
+                "Delete Habit",
+                "Mark Habit as Complete",
+                "View Habit Streaks",
+                "Exit"
+            ]
         ).ask()
 
-        # Handle case where user cancels the choice prompt
-        if choice is None:
-            print("You exited the program. Goodbye!")
-            stop = True
-            continue
+        if action == "Add Habit":
+            name = questionary.text("Enter habit name:").ask()
+            description = questionary.text("Enter habit description:").ask()
+            periodicity = questionary.select("Choose periodicity:", choices=["daily", "weekly"]).ask()
 
-        # Ask for the habit name
-        name = questionary.text("What's the name of your habit?").ask()
+            new_habit = Habit(name, description, periodicity)
+            tracker.add_habit(new_habit)
+            habit_id = db.save_habit(new_habit)
+            print(f"Habit '{name}' added with ID {habit_id}.")
 
-        if choice == "Create":
-            # Ask for a description
-            description = questionary.text("What's the description of your habit?").ask()
-            # Ask for the periodicity (daily or weekly)
-            periodicity = questionary.select(
-                "Is this habit daily or weekly?",
-                choices=["daily", "weekly"]
-            ).ask()
+        elif action == "Delete Habit":
+            name = questionary.text("Enter habit name to delete:").ask()
+            habit_to_delete = tracker.get_habit(name)
+            if habit_to_delete:
+                habit_id = db.get_habit_id(habit_to_delete.get_name())
+                db.delete_habit(habit_id)
+                print(f"Habit '{name}' deleted.")
+            else:
+                print("Habit not found.")
 
-            # Error handling: Ensure the user input is valid
-            if not name or not description or not periodicity:
-                print("Error: Name, description, and periodicity are required.")
-                continue
+        elif action == "Mark Habit as Complete":
+            name = questionary.text("Enter habit name to mark as complete:").ask()
+            habit_to_complete = tracker.get_habit(name)
+            if habit_to_complete:
+                habit_to_complete.complete_habit()
+                habit_id = db.get_habit_id(name)
+                db.save_completion(habit_id, datetime.now())
+                print(f"Marked '{name}' as complete.")
+            else:
+                print("Habit not found.")
 
-            try:
-                # Create a new habit and store it in the tracker
-                tracker.add_habit(db, name, description, periodicity)
-                print(f"Habit '{name}' has been created.")
-            except sqlite3.IntegrityError:
-                # Catch IntegrityError if the habit already exists
-                print(f"Error: A habit with the name '{name}' already exists.")
-            except Exception as e:
-                # General exception handling for any other issues
-                print(f"Error while creating habit: {e}")
+        elif action == "View Habit Streaks":
+            for habit_instance in tracker.habits:
+                print(f"Habit '{habit_instance.get_name()}' has a streak of {habit_instance.streak()} days/weeks.")
 
-        elif choice == "Complete Habit":
-            try:
-                # Check off (complete) the habit
-                tracker.check_off_habit(db, name)
-                print(f"Habit '{name}' has been completed.")
-            except KeyError:
-                # Catch a KeyError if the habit name is not found
-                print(f"Error: Habit '{name}' does not exist.")
-            except Exception as e:
-                # General exception handling for any other issues
-                print(f"Error while completing habit: {e}")
-
-        elif choice == "Analyse":
-            try:
-                # Analyse the habit and calculate the completion count
-                completion_count = tracker.calculate_completion_count(db, name)
-                print(f"Habit '{name}' has been completed {completion_count} times.")
-            except KeyError:
-                # Catch a KeyError if the habit name is not found
-                print(f"Error: Habit '{name}' does not exist.")
-            except Exception as e:
-                # General exception handling for any other issues
-                print(f"Error while analysing habit: {e}")
-
-        elif choice == "Exit":
-            # Exit the loop
-            print("Goodbye!")
-            stop = True
-
+        elif action == "Exit":
+            break
 
 if __name__ == "__main__":
-    cli()
+    main()
+
+
+
 
 
