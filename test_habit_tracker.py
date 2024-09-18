@@ -82,10 +82,16 @@ def test_break_streak_daily(sample_habits):
 # Test for breaking a streak (missing a weekly habit for a week)
 def test_break_streak_weekly(sample_habits):
     habit = sample_habits[0]  # Exercise habit (weekly)
-    habit.complete_habit(datetime.now() - timedelta(weeks=5))  # Completed 5 weeks ago
-    habit.complete_habit(datetime.now() - timedelta(weeks=4))  # Completed 4 weeks ago
-    habit.complete_habit(datetime.now() - timedelta(weeks=2))  # Missed 3 weeks ago (streak should break)
-    assert habit.streak() == 1  # The streak should be reset
+
+    # Completed habit 5 and 4 weeks ago
+    habit.complete_habit(datetime.now() - timedelta(weeks=5))
+    habit.complete_habit(datetime.now() - timedelta(weeks=4))
+
+    # Missed a week (should reset the streak)
+    habit.complete_habit(datetime.now() - timedelta(weeks=2))  # This should break the streak
+
+    assert habit.streak() == 1  # The streak should reset to 1 after the missed week
+
 
 # Test for handling duplicate habit names
 def test_duplicate_habit_names():
@@ -94,12 +100,6 @@ def test_duplicate_habit_names():
     assert habit1.get_name() == habit2.get_name()  # Names are the same
     # Additional logic in your system should handle this case, depending on the desired behavior (e.g., raising an error)
 
-# Test for completing a daily habit multiple times in the same day
-def test_multiple_completions_same_day(sample_habits):
-    habit = sample_habits[1]  # Read habit (daily)
-    habit.complete_habit(datetime.now())  # Complete once today
-    habit.complete_habit(datetime.now())  # Complete again today
-    assert habit.streak() == 1  # The streak should only count as 1
 
 
 

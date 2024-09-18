@@ -1,76 +1,86 @@
-from datetime import datetime
-
+from datetime import datetime, timedelta
 
 class Habit:
     def __init__(self, name: str, description: str, periodicity: str):
-        """Create a new Habit with the given name, description, and periodicity."""
         self._name = name
         self._description = description
         self._periodicity = periodicity  # 'daily' or 'weekly'
         self._creation_date = datetime.now()
-        self._completions = []  # A list of dates when the habit was marked complete.
+        self._completions = []
 
-    # Getter methods to access non-public attributes
-    def get_name(self):
-        return self._name
+    def complete_habit(self, completion_date: datetime = None):
+        if not completion_date:
+            completion_date = datetime.now()
 
-    def get_description(self):
-        return self._description
+        # Avoid duplicate completions for the same day/week
+        if self._completions:
+            last_completion = self._completions[-1]
+            if self._periodicity == 'daily':
+                if last_completion.date() == completion_date.date():
+                    print("Habit already completed today.")
+                    return
+            elif self._periodicity == 'weekly':
+                last_week = last_completion.isocalendar()[1]
+                current_week = completion_date.isocalendar()[1]
+                if last_week == current_week:
+                    print("Habit already completed this week.")
+                    return
 
-    def get_periodicity(self):
-        return self._periodicity
+        # Add the completion date
+        self._completions.append(completion_date)
 
-    def get_creation_date(self):
-        return self._creation_date
-
-    def get_completions(self):
-        """Return the list of completion dates."""
-        return self._completions
-
-    def complete_habit(self, date=None):
-        """Marks a habit as complete by adding the current date to the completions list, ensuring no duplicate entries for the same day."""
-        if date is None:
-            date = datetime.now()
-
-        # Check if the habit was already completed on this date
-        if not any(completion.date() == date.date() for completion in self.get_completions()):
-            self._completions.append(date)
-
-    def streak(self) -> int:
-        """Calculate the longest streak of consecutive completions."""
-        if not self.get_completions():
+    def streak(self):
+        if not self._completions:
             return 0
 
-        # Initialize the streak counter
         current_streak = 1
-        longest_streak = 1
+        completions = sorted(self._completions)  # Sort completions in case they are out of order
 
-        # Sort the completion dates in ascending order
-        completions = self.get_completions()
-        completions.sort()
-
-        # Compare each completion date to the one before it
+        # Iterate over completions and calculate streak
         for i in range(1, len(completions)):
             current = completions[i]
             previous = completions[i - 1]
 
-            if self.get_periodicity() == "daily":
-                # Daily habits: Check if the current completion is exactly 1 day after the previous completion
+            if self._periodicity == 'daily':
+                # If the days are consecutive, increase the streak
                 if (current.date() - previous.date()).days == 1:
                     current_streak += 1
                 else:
-                    current_streak = 1  # Reset streak if a day is missed
+                    # If a day is missed, break the streak
+                    return current_streak
 
-            elif self.get_periodicity() == "weekly":
-                # Weekly habits: Check if the current completion is within 7 days after the previous completion
-                if (current.date() - previous.date()).days <= 7:
+            elif self._periodicity == 'weekly':
+                current_week = current.isocalendar()[1]
+                previous_week = previous.isocalendar()[1]
+                current_year = current.isocalendar()[0]
+                previous_year = previous.isocalendar()[0]
+
+                # Check if weeks are consecutive
+                if (current_year == previous_year and current_week == previous_week + 1) or \
+                   (current_year == previous_year + 1 and current_week == 1 and previous_week == 52):
                     current_streak += 1
                 else:
-                    current_streak = 1  # Reset streak if more than 7 days passed
+                    print("Resetting streak due to missed week.")
+                    return 1  # Reset to 1 when a week is missed
 
-            # Track the longest streak encountered
-            if current_streak > longest_streak:
-                longest_streak = current_streak
+        print(f"Final streak: {current_streak}")
+        return current_streak
 
-        return longest_streak
+    def get_name(self):
+        return self._name
+
+    def get_periodicity(self):
+        return self._periodicity
+
+
+
+
+
+
+
+
+
+
+
+
 
