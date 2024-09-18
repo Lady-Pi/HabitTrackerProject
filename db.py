@@ -1,5 +1,6 @@
 import sqlite3
-from datetime import datetime
+from habit import Habit
+from datetime import datetime, timedelta
 
 class Database:
     def __init__(self, db_name="habit_tracker.db"):
@@ -73,3 +74,40 @@ class Database:
         cursor = self.conn.execute('SELECT id FROM habits WHERE name = ?', (name,))
         result = cursor.fetchone()
         return result[0] if result else None
+
+
+def initialize_predefined_habits(db):
+    """Function to initialize the database with predefined habits and example tracking data."""
+
+    # Check if the database is empty
+    if not db.load_habits():
+        print("Initializing predefined habits...")
+
+        # Define the predefined habits
+        habits = [
+            Habit("Exercise", "Weekly Exercise", "weekly"),
+            Habit("Read", "Read every day", "daily"),
+            Habit("Meditate", "Daily meditation", "daily"),
+            Habit("Art Class", "Attend weekly art class", "weekly"),
+            Habit("Learn French", "Daily French lesson", "daily")
+        ]
+
+        # Simulate completion data over the last 4 weeks
+        for habit in habits:
+            if habit.get_periodicity() == "daily":
+                # Add 28 consecutive days of completion for daily habits
+                for i in range(28):
+                    habit.complete_habit(datetime.now() - timedelta(days=i))
+            elif habit.get_periodicity() == "weekly":
+                # Add 4 consecutive weeks of completion for weekly habits
+                for i in range(4):
+                    habit.complete_habit(datetime.now() - timedelta(weeks=i))
+
+            # Save the habit to the database
+            db.save_habit(habit)
+
+        print("Predefined habits initialized.")
+    else:
+        print("Habits already exist in the database.")
+
+
