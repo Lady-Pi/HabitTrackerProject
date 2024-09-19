@@ -32,7 +32,7 @@ def main():
                 "View Habit Streaks",
                 "View All Habits",
                 "View Habits by Periodicity",
-                "View Longest Streak Habit",
+                "View Habit with Longest Streak",
                 "Exit"
             ]
         ).ask()
@@ -127,7 +127,7 @@ def main():
             habit_names = [habit.get_name() for habit in habits_by_period]
             print(f"\n{periodicity.capitalize()} Habits:", ", ".join(habit_names))
 
-        elif action == "View Longest Streak Habit":
+        elif action == "View Habit with Longest Streak":
             longest_streak_habit = longest_streak_all_habits(tracker.habits)
             if longest_streak_habit:
                 print(
