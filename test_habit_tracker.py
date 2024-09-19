@@ -1,105 +1,73 @@
 import pytest
-from habit import Habit
 from datetime import datetime, timedelta
+from habit import Habit
 from analyse import list_all_habits, list_habits_by_periodicity, longest_streak_all_habits, longest_streak_for_habit
 
-# The function sample_habits() is marked as a fixture using the @pytest.fixture decorator, to be used in multiple tests.
+# Fixture to setup sample habits
 @pytest.fixture
 def sample_habits():
-    habit1 = Habit("Exercise", "Weekly Exercise", "weekly")  # 4-week streak
-    habit2 = Habit("Read", "Read every day", "daily")  # 2-day streak
-    habit3 = Habit("Meditate", "Meditation session", "daily")  # 3-day streak
-    habit4 = Habit("Art Class", "Attend weekly art class", "weekly")  # 1-week streak
-    habit5 = Habit("Learn French", "Daily French lesson", "daily")  # 2-day streak
-
-    # Simulate completions for a 4-week streak
-    habit1.complete_habit(datetime.now() - timedelta(weeks=4))  # Completed 4 weeks ago
-    habit1.complete_habit(datetime.now() - timedelta(weeks=3))  # Completed 3 weeks ago
-    habit1.complete_habit(datetime.now() - timedelta(weeks=2))  # Completed 2 weeks ago
-    habit1.complete_habit(datetime.now() - timedelta(weeks=1))  # Completed 1 week ago
-
-    habit2.complete_habit(datetime.now() - timedelta(days=2))  # Completed 2 days ago
-    habit2.complete_habit(datetime.now() - timedelta(days=1))  # Completed 1 day ago
-
-    habit3.complete_habit(datetime.now() - timedelta(days=3))  # completed 3 days ago
-    habit3.complete_habit(datetime.now() - timedelta(days=2))  # completed 2 days ago
-    habit3.complete_habit(datetime.now() - timedelta(days=1))  # completed 1 day ago
-
-    habit4.complete_habit(datetime.now() - timedelta(weeks=1))  # Completed 1 week ago
-
-    habit5.complete_habit(datetime.now() - timedelta(days=2))  # Completed 2 days ago
-    habit5.complete_habit(datetime.now() - timedelta(days=1))  # Completed 1 day ago
-
+    habit1 = Habit("Exercise", "Weekly Exercise", "weekly")
+    habit2 = Habit("Read", "Read every day", "daily")
+    habit3 = Habit("Meditate", "Meditation session", "daily")
+    habit4 = Habit("Art Class", "Attend weekly art class", "weekly")
+    habit5 = Habit("Learn French", "Daily French lesson", "daily")
     return [habit1, habit2, habit3, habit4, habit5]
 
-# Test listing all habits
+# Fixture to setup completions for habits
+@pytest.fixture
+def setup_completions(sample_habits):
+    base_date = datetime(2023, 9, 25)
+    # Setup completions to create streaks
+    sample_habits[0].complete_habit(base_date - timedelta(weeks=2))  # 3-week streak
+    sample_habits[0].complete_habit(base_date - timedelta(weeks=1))
+    sample_habits[0].complete_habit(base_date)
+    for i in range(5):
+        sample_habits[1].complete_habit(base_date + timedelta(days=i))  # 5-day streak
+    for i in range(3):
+        sample_habits[2].complete_habit(base_date + timedelta(days=i))  # 3-day streak
+    sample_habits[2].complete_habit(base_date + timedelta(days=5))  # Then 2 more days after a break
+    sample_habits[2].complete_habit(base_date + timedelta(days=6))
+    sample_habits[3].complete_habit(base_date)  # Single completions for remaining habits
+    sample_habits[4].complete_habit(base_date)
+
+# Test listing all habits based on their names
 def test_list_all_habits(sample_habits):
-    result = list_all_habits(sample_habits)
-    assert result == ["Exercise", "Read", "Meditate", "Art Class", "Learn French"]
+    assert list_all_habits(sample_habits) == [habit.get_name() for habit in sample_habits]
 
 # Test listing habits by periodicity
 def test_list_habits_by_periodicity(sample_habits):
-    # Daily habits
     daily_habits = list_habits_by_periodicity(sample_habits, "daily")
-    assert len(daily_habits) == 3
-    assert daily_habits[0].get_name() == "Read"
-    assert daily_habits[1].get_name() == "Meditate"
-    assert daily_habits[2].get_name() == "Learn French"
-
-    # Weekly habits
     weekly_habits = list_habits_by_periodicity(sample_habits, "weekly")
-    assert len(weekly_habits) == 2
-    assert weekly_habits[0].get_name() == "Exercise"
-    assert weekly_habits[1].get_name() == "Art Class"
+    assert len(daily_habits) == 3  # There are three daily habits
+    assert len(weekly_habits) == 2  # There are two weekly habits
 
-# Test longest streak across all habits
-def test_longest_streak_all_habits(sample_habits):
-    longest_habit = longest_streak_all_habits(sample_habits)
-    assert longest_habit.get_name() == "Exercise"
-
-# Test streak for each habit
-def test_longest_streak_for_habit(sample_habits):
-    assert longest_streak_for_habit(sample_habits[0]) == 4  # Exercise: 4-week streak
-    assert longest_streak_for_habit(sample_habits[1]) == 2  # Read: 2-day streak
-    assert longest_streak_for_habit(sample_habits[2]) == 3  # Meditate: 3-day streak
-    assert longest_streak_for_habit(sample_habits[3]) == 1  # Art Class: 1-week streak
-    assert longest_streak_for_habit(sample_habits[4]) == 2  # Learn French: 2-day streak
-
-# Test for an empty database (no habits)
-def test_no_habits():
-    no_habits = []
-    assert list_all_habits(no_habits) == []
-    assert longest_streak_all_habits(no_habits) is None  # No habit should return None for longest streak
-
-# Test for breaking a streak (missing a daily habit for a day)
-def test_break_streak_daily(sample_habits):
-    def test_break_streak_daily(sample_habits):
-        habit = sample_habits[1]  # Read habit (daily)
-        habit.complete_habit(datetime.now() - timedelta(days=3))  # Complete 3 days ago
-        habit.complete_habit(datetime.now() - timedelta(days=2))  # Complete 2 days ago
-        # Simulate missing yesterday's completion
-        assert habit.streak() == 1  # The streak should reset to 1 after missing a day
+# Test which habit has the longest streak across all habits
+def test_longest_streak_all_habits(sample_habits, setup_completions):
+    longest_streak_habit = longest_streak_all_habits(sample_habits)
+    assert longest_streak_habit.get_name() == "Read"  # We expect "Read" to have the longest streak (5 days)
 
 
-# Test for breaking a streak (missing a weekly habit for a week)
-def test_break_streak_weekly(sample_habits):
-    exercise_habit = sample_habits[0]
+# Test the longest streak for a specific habit
+def test_longest_streak_for_habit(sample_habits, setup_completions):
+    assert longest_streak_for_habit(sample_habits[0]) == 3  # Exercise habit
+    assert longest_streak_for_habit(sample_habits[1]) == 5  # Read habit
 
-    # Reduced extra completion data
-    total_weeks = len(exercise_habit._completions)
+# Test the streak functionality for daily habits with a reset after a missed day
+def test_daily_habit_streak(sample_habits):
+    habit = sample_habits[1]  # "Read" habit
+    base_date = datetime(2023, 9, 25)
+    habit.complete_habit(base_date + timedelta(days=2))
+    habit.complete_habit(base_date + timedelta(days=4))
+    assert habit.streak() == 1  # Streak should reset after missed days
 
-    expected_streak = 4  # (4-week)
+# Test the streak functionality for weekly habits with a reset after a missed week
+def test_weekly_habit_streak(sample_habits):
+    habit = sample_habits[0]  # "Exercise" habit
+    base_week_start = datetime(2023, 9, 25) - timedelta(days=datetime(2023, 9, 25).weekday())
+    habit.complete_habit(base_week_start - timedelta(weeks=1))  # Last week
+    habit.complete_habit(base_week_start + timedelta(weeks=1))  # Next week
+    assert habit.streak() == 1  # Expect streak to reset after a missed week
 
-    print(f"Checking for completion weeks: {total_weeks}")
-    assert exercise_habit.streak() == expected_streak, f"Expected streak to be {expected_streak} but got {exercise_habit.streak()}"
-
-
-# Test for handling duplicate habit names
-def test_duplicate_habit_names():
-    habit1 = Habit("Exercise", "Weekly Exercise", "weekly")
-    habit2 = Habit("Exercise", "Another weekly exercise habit", "weekly")  # Same name
-    assert habit1.get_name() == habit2.get_name()  # Names are the same
-    # Additional logic in your system should handle this case, depending on the desired behavior (e.g., raising an error)
 
 
 

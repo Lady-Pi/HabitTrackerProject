@@ -2,7 +2,6 @@ import sqlite3
 from habit import Habit
 from datetime import datetime
 
-
 class Database:
     def __init__(self, db_name="habit_tracker.db"):
         """Initialize the database connection and create tables if they don't exist."""
@@ -138,7 +137,6 @@ def initialize_predefined_habits(db):
             db.save_habit(Habit(habit["name"], habit["description"], habit["periodicity"]))
 
     db.insert_test_data()
-    print("Predefined habits have been ensured in the database.")
 
 
 

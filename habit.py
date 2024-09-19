@@ -46,21 +46,19 @@ class Habit:
         if not self._completions:
             return 0
 
-        current_streak = 1
-        #moving duplicated and soring
-        sorted_completions = sorted(set(self._completions))
+        sorted_completions = sorted(set(self._completions))  # Ensure unique and sorted entries
+        current_streak = 1  # Start with the latest completion
 
-        for i in range(1, len(sorted_completions)):
+        # Start from the end of the list and move backwards
+        for i in range(len(sorted_completions) - 1, 0, -1):
             current = sorted_completions[i]
             previous = sorted_completions[i - 1]
 
             if self._periodicity == 'daily':
-                # Check if the current completion is exactly 1 day after the previous
-                delta = (current - previous).days
-                if delta == 1:
+                if (current - previous).days == 1:
                     current_streak += 1
                 else:
-                    current_streak = 1  # Reset streak if a day is missed
+                    break  # Stop counting if a day is missed
 
             elif self._periodicity == 'weekly':
                 current_week = current.isocalendar()[1]
@@ -72,11 +70,10 @@ class Habit:
                         current_year == previous_year + 1 and current_week == 1 and previous_week in {52, 53}):
                     current_streak += 1
                 else:
-                    current_streak = 1  # Reset streak if a week is missed
+                    break  # Stop counting if a week is missed
 
-
-        print(f"Streak calculated as: {current_streak}")
         return current_streak
+
 
 
 
