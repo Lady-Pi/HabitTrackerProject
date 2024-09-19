@@ -11,8 +11,8 @@ def list_habits_by_periodicity(habits, periodicity):
 
 def longest_streak_all_habits(habits):
     """Uses max() to return the habit with the longest run streak of all habits."""
-    for habit in habits:
-        print(f"Habit: {habit.get_name()}, Streak: {habit.streak()}")  # Print each habit's streak
+    for hbt in habits:
+        print(f"Habit: {hbt.get_name()}, Streak: {hbt.streak()}")  # Print each habit's streak
 
     result = max(habits, key=lambda habit: habit.streak(), default=None)
 

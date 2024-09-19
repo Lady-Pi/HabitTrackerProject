@@ -14,7 +14,7 @@ class HabitTracker:
     def get_habit(self, habit_name):
         """Retrieve a habit by its name."""
         for habit in self.habits:
-            if habit.get_name == habit_name:
+            if habit.get_name() == habit_name:
                 return habit
         return None
 

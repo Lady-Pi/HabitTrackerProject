@@ -32,16 +32,12 @@ class Habit:
         # Avoid duplicate completions for the same day/week
         if self._completions:
             last_completion = self._completions[-1]
-            if self._periodicity == 'daily':
-                if last_completion.date() == completion_date.date():
-                    print("Habit already completed today.")
-                    return
-            elif self._periodicity == 'weekly':
-                last_week = last_completion.isocalendar()[1]
-                current_week = completion_date.isocalendar()[1]
-                if last_week == current_week:
-                    print("Habit already completed this week.")
-                    return
+            if self._periodicity == 'daily' and last_completion.date() == completion_date.date():
+                print("Habit already completed today.")
+                return
+            elif self._periodicity == 'weekly' and last_completion.isocalendar()[1] == completion_date.isocalendar()[1]:
+                print("Habit already completed this week.")
+                return
 
         # Add the completion date
         self._completions.append(completion_date)
@@ -51,20 +47,20 @@ class Habit:
             return 0
 
         current_streak = 1
-        completions = sorted(self._completions)  # Sort completions in case they are out of order
+        #moving duplicated and soring
+        sorted_completions = sorted(set(self._completions))
 
-        # Iterate over completions and calculate streak
-        for i in range(1, len(completions)):
-            current = completions[i]
-            previous = completions[i - 1]
+        for i in range(1, len(sorted_completions)):
+            current = sorted_completions[i]
+            previous = sorted_completions[i - 1]
 
             if self._periodicity == 'daily':
-                # If the days are consecutive, increase the streak
-                if (current.date() - previous.date()).days == 1:
+                # Check if the current completion is exactly 1 day after the previous
+                delta = (current - previous).days
+                if delta == 1:
                     current_streak += 1
                 else:
-                    # If a day is missed, break the streak
-                    return current_streak
+                    current_streak = 1  # Reset streak if a day is missed
 
             elif self._periodicity == 'weekly':
                 current_week = current.isocalendar()[1]
@@ -72,16 +68,17 @@ class Habit:
                 current_year = current.isocalendar()[0]
                 previous_year = previous.isocalendar()[0]
 
-                # Check if weeks are consecutive
-                if (current_year == previous_year and current_week == previous_week + 1) or \
-                   (current_year == previous_year + 1 and current_week == 1 and previous_week == 52):
+                if (current_year == previous_year and current_week == previous_week + 1) or (
+                        current_year == previous_year + 1 and current_week == 1 and previous_week in {52, 53}):
                     current_streak += 1
                 else:
-                    print("Resetting streak due to missed week.")
-                    return 1  # Reset to 1 when a week is missed
+                    current_streak = 1  # Reset streak if a week is missed
 
-        print(f"Final streak: {current_streak}")
+
+        print(f"Streak calculated as: {current_streak}")
         return current_streak
+
+
 
 
 
