@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class Habit:
     def __init__(self, name: str, description: str, periodicity: str):
@@ -7,6 +7,23 @@ class Habit:
         self._periodicity = periodicity  # 'daily' or 'weekly'
         self._creation_date = datetime.now()
         self._completions = []
+
+    # Getter methods to access non-public attributes
+    def get_name(self):
+        return self._name
+
+    def get_description(self):
+        return self._description
+
+    def get_periodicity(self):
+        return self._periodicity
+
+    def get_creation_date(self):
+        return self._creation_date
+
+    def get_completions(self):
+        """Return the list of completion dates."""
+        return self._completions
 
     def complete_habit(self, completion_date: datetime = None):
         if not completion_date:
@@ -66,11 +83,7 @@ class Habit:
         print(f"Final streak: {current_streak}")
         return current_streak
 
-    def get_name(self):
-        return self._name
 
-    def get_periodicity(self):
-        return self._periodicity
 
 
 

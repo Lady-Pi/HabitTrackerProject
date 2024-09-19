@@ -13,7 +13,7 @@ The Habit Tracker allows users to:
 - View analytical insights, such as the habit with the longest streak.
 - If a habit is not completed within the specified period, the streak is reset. 
 
-The application uses an SQLite database to persist data, ensuring that habit data is stored and retrieved.
+The application uses an SQLite database to save and load data. 
 
 Users are able to interact with the CLI via Questionary.
 
@@ -21,13 +21,31 @@ Users are able to interact with the CLI via Questionary.
 
 To install and run the Habit Tracker, follow these steps:
 
-1. Clone or download the project to your computer.
-2. Navigate to the project directory.
+1. Clone or download the project to your computer using Git:
+  ```bash
+   git clone https://github.com/Lady-Pi/HabitTrackerProject.git
+   ```
+2. Navigate to the project directory:
 
 ```shell
 cd path/to/HabitTrackerProject
 ```
-3. Install the required dependencies (like third party libraries) from the requirements.txt file:
+3. Create a virtual environment and activate it to isolate project dependencies:
+
+On Windows:
+```shell
+python -m venv .venv
+.venv\Scripts\activate
+```
+On macOS/Linux:
+
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+
+```
+
+4. Install the required dependencies (like third party libraries) from the requirements.txt file:
 
 ```shell
 pip install -r requirements.txt
@@ -35,30 +53,39 @@ pip install -r requirements.txt
 
 ## Usage
 
-This application provides back-end functionality only, and all interactions takes place via the Command Line Interface (CLI). 
-To run the application, you must use a terminal or cmd.exe (on Windows) to ensure compatibility with Questionary.
+The application relies on Questionary for CLI interaction. This works best when run from a terminal like cmd.exe (Windows),
+or other terminals with full console support.
 
 1. Open the Command Prompt: 
    - For Windows, press Win + R, type cmd, and hit Enter.
 
+2. Before running the app, ensure the Virtual Environment is active. 
 
-2. Navigate to the project directory: 
+On Windows:
+
 ```shell
-cd path/to/HabitTrackerProject
+.venv\Scripts\activate
+
+```
+On macOS/Linux:
+
+```shell
+source .venv/bin/activate
+
 ```
 
-3. Run the Application:
-
+3. Navigate to the root directory of the project and run the application: 
 ```shell
 python main.py
+
 ```
 
-4. Follow the instructions on the screen. You will be presented with a menu.
-Use the arrow keys to navigate through the options and press Enter to select.
+4. Follow the instructions on the screen to interact with the habit tracker.
+Use the arrow keys to navigate through the options and press Enter to confirm.
 
 ## Testing
 
-To run tests for the Habit Tracker application, run pytest.py in the IDE use the following command:
+To run tests for the Habit Tracker application
 
 ```shell
 pytest . 
