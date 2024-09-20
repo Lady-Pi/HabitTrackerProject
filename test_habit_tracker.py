@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from habit import Habit
 from analyse import list_all_habits, list_habits_by_periodicity, longest_streak_all_habits, longest_streak_for_habit
 
-# Fixture to setup sample habits
+# Fixture to set up sample habits
 @pytest.fixture
 def sample_habits():
     habit1 = Habit("Exercise", "Weekly Exercise", "weekly")
@@ -13,7 +13,7 @@ def sample_habits():
     habit5 = Habit("Learn French", "Daily French lesson", "daily")
     return [habit1, habit2, habit3, habit4, habit5]
 
-# Fixture to setup completions for habits
+# Fixture to set up completions for habits
 @pytest.fixture
 def setup_completions(sample_habits):
     base_date = datetime(2023, 9, 25)

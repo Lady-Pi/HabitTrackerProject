@@ -11,10 +11,11 @@ class HabitTracker:
         """Delete a habit by its name."""
         self.habits = [habit for habit in self.habits if habit.get_name != habit_name]
 
-    def get_habit(self, habit_name):
-        """Retrieve a habit by its name."""
+    def get_habit(self, name: str):
+        # Convert both the stored habit names and input name to lowercase for comparison
+        name_lower = name.lower()
         for habit in self.habits:
-            if habit.get_name() == habit_name:
+            if habit.get_name().lower() == name_lower:  # Case-insensitive comparison
                 return habit
         return None
 

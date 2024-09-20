@@ -76,8 +76,8 @@ class Database:
         self.conn.commit()
 
     def get_habit_id(self, name):
-        """Retrieve the habit_id by habit name."""
-        cursor = self.conn.execute('SELECT id FROM habits WHERE name = ?', (name,))
+        """Retrieve the habit's ID from the database based on the habit name."""
+        cursor = self.conn.execute('SELECT id FROM habits WHERE LOWER(name) = LOWER(?)', (name,))
         result = cursor.fetchone()
         return result[0] if result else None
 

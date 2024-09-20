@@ -3,7 +3,7 @@ from habit_tracker import HabitTracker
 from habit import Habit
 from db import Database, initialize_predefined_habits
 from datetime import datetime
-from analyse import list_all_habits, list_habits_by_periodicity, longest_streak_all_habits
+from analyse import list_habits_by_periodicity, longest_streak_all_habits
 
 # Create HabitTracker and Database instances
 tracker = HabitTracker()
@@ -29,7 +29,6 @@ def main():
                 "Delete Habit",
                 "View Specific Habit",
                 "Mark Habit as Complete",
-                "View Habit Streaks",
                 "View All Habits",
                 "View Habits by Periodicity",
                 "View Habit with Longest Streak",
@@ -49,9 +48,9 @@ def main():
 
         elif action == "View Specific Habit":
             name = questionary.text("Enter habit name to view:").ask()
-            habit_to_view = tracker.get_habit(name)
+            habit_to_view = tracker.get_habit(name.lower()) #conver to lowercase
             if habit_to_view:
-                print(f"\nHabit: {habit_to_view.get_name()}")
+                print(f"\nHabit: {habit_to_view.get_name().title()}")
                 print(f"Description: {habit_to_view.get_description()}")
                 print(f"Periodicity: {habit_to_view.get_periodicity()}")
                 print(f"Streak: {habit_to_view.streak() or 0}")
@@ -65,18 +64,18 @@ def main():
 
         elif action == "Delete Habit":
             name = questionary.text("Enter habit name to delete:").ask()
-            habit_to_delete = tracker.get_habit(name)
+            habit_to_delete = tracker.get_habit(name.lower())
             if habit_to_delete:
                 habit_id = db.get_habit_id(habit_to_delete.get_name())
                 db.delete_habit(habit_id)
-                tracker.delete_habit(name)
-                print(f"Habit '{name}' deleted.")
+                tracker.delete_habit(name.lower())
+                print(f"Habit '{name.title()}' deleted.")
             else:
                 print("Habit not found.")
 
         elif action == "Mark Habit as Complete":
             name = questionary.text("Enter habit name to mark as complete:").ask()
-            habit_to_complete = tracker.get_habit(name)
+            habit_to_complete = tracker.get_habit(name.lower())
             if habit_to_complete:
                 now = datetime.now()
                 # Check for duplicate completion
@@ -84,15 +83,15 @@ def main():
                 if habit_periodicity == "daily":
                     for completion in habit_to_complete.get_completions():
                         if completion.date() == now.date():
-                            print(f"Cannot mark '{name}' as complete. It has already been marked complete today.")
+                            print(f"Cannot mark '{name.title()}' as complete. It has already been marked complete today.")
                             break
                     else:
                         habit_to_complete.complete_habit()
                         habit_id = db.get_habit_id(name)
                         db.save_completion(habit_id, now)
-                        print(f"Marked '{name}' as complete.")
+                        print(f"Marked '{name.title()}' as complete.")
                         print(
-                            f"Completions for '{name}': {', '.join(str(completion) for completion in habit_to_complete.get_completions())}")
+                            f"Completions for '{name.title()}': {', '.join(str(completion) for completion in habit_to_complete.get_completions())}")
 
                 elif habit_periodicity == "weekly":
                     current_week = now.isocalendar()[1]
@@ -101,25 +100,40 @@ def main():
                         comp_week = completion.isocalendar()[1]
                         comp_year = completion.isocalendar()[0]
                         if comp_week == current_week and comp_year == current_year:
-                            print(f"Cannot mark '{name}' as complete. It has already been marked complete this week.")
+                            print(f"Cannot mark '{name.title()}' as complete. It has already been marked complete this week.")
                             break
                     else:
                         habit_to_complete.complete_habit()
                         habit_id = db.get_habit_id(name)
                         db.save_completion(habit_id, now)
-                        print(f"Marked '{name}' as complete.")
+                        print(f"Marked '{name.title()}' as complete.")
                         print(
-                            f"Completions for '{name}': {', '.join(str(completion) for completion in habit_to_complete.get_completions())}")
+                            f"Completions for '{name.title()}': {', '.join(str(completion) for completion in habit_to_complete.get_completions())}")
 
             else:
                 print("Habit not found.")
 
-
         elif action == "View All Habits":
-            all_habits = list_all_habits(tracker.habits)
-            print("All Habits:", ", ".join(all_habits))
-            for habit in tracker.habits:
-                print(f"{habit.get_name()} - Streak: {habit.streak() or 0}")
+            all_habits = tracker.habits
+            if not all_habits:
+                print("No habits found.")
+            else:
+                print("\nAll Habits:")
+                for habit in all_habits:
+                    # Get the latest completion if available
+                    completions = habit.get_completions()
+                    if completions:
+                        latest_completion = max(completions)  # Get the most recent completion date
+                        latest_completion_str = latest_completion.strftime("%Y-%m-%d %H:%M:%S")
+                    else:
+                        latest_completion_str = "No completions yet"
+
+                    print(f"- Habit: {habit.get_name()}")
+                    print(f"  Description: {habit.get_description()}")
+                    print(f"  Periodicity: {habit.get_periodicity().capitalize()}")
+                    print(f"  Streak: {habit.streak() or 0} consecutive completions")
+                    print(f"  Latest Completion: {latest_completion_str}\n")
+
 
         elif action == "View Habits by Periodicity":
             periodicity = questionary.select("Choose periodicity to view:", choices=["daily", "weekly"]).ask()
@@ -131,17 +145,9 @@ def main():
             longest_streak_habit = longest_streak_all_habits(tracker.habits)
             if longest_streak_habit:
                 print(
-                    f"\nThe habit with the longest streak is '{longest_streak_habit.get_name()}' with a streak of {longest_streak_habit.streak() or 0}")  # Ensure streak is a number
+                    f"\nThe habit with the longest streak is '{longest_streak_habit.get_name.title()}' with a streak of {longest_streak_habit.streak() or 0}")  # Ensure streak is a number
             else:
                 print("No habits found.")
-
-        elif action == "View Habit Streaks":
-            print("\nHabit Streaks:")
-            for habit in tracker.habits:
-                print(f"Calculating streak for habit '{habit.get_name()}':")
-                streak = habit.streak() or 0
-                print(f"{habit.get_name()} - Streak: {streak}")
-            print()
 
         elif action == "Exit":
             break
