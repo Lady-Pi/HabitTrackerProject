@@ -1,36 +1,56 @@
-from functools import reduce #reduce is used to combine elements of a list into a single result by applying a function.
-
 def list_all_habits(habits):
-    """Uses map() to create a list of all currently tracked habits."""
+    """
+    Creates a list of names of all currently tracked habits.
+
+    Args:
+        habits (list): A list of Habit objects.
+
+    Returns:
+        list: A list of names of all habits.
+    """
     return list(map(lambda habit: habit.get_name(), habits))
 
+
 def list_habits_by_periodicity(habits, periodicity):
-    """Uses filter() to return a list of habits with the same periodicity."""
+    """
+    Returns a list of habits that have the specified periodicity.
+
+    Args:
+        habits (list): A list of Habit objects.
+        periodicity (str): The periodicity to filter habits by ('daily' or 'weekly').
+
+    Returns:
+        list: A list of Habit objects with the given periodicity.
+    """
     return list(filter(lambda habit: habit.get_periodicity() == periodicity, habits))
 
 
 def longest_streak_all_habits(habits):
-    """Uses max() to return the habit with the longest run streak of all habits."""
-    for hbt in habits:
-        print(f"Habit: {hbt.get_name()}, Streak: {hbt.streak()}")  # Print each habit's streak
+    """
+    Returns the habit with the longest run streak among all habits.
 
+    Args:
+        habits (list): A list of Habit objects.
+
+    Returns:
+        Habit: The habit with the longest streak, or None if there are no habits.
+    """
     result = max(habits, key=lambda habit: habit.streak(), default=None)
-
-    if result:
-        print(
-            f"Longest streak habit: {result.get_name()} with streak: {result.streak()}")  # Print the longest streak habit
     return result
 
 
 def longest_streak_for_habit(habit):
-    """Return the longest streak for a specific habit."""
-    streak = habit.streak()
-    print(f"Streak for habit {habit.get_name()}: {streak}")  # Print the streak for the habit
-    return streak
+    """
+    Returns the longest streak for a specific habit.
+
+    Args:
+        habit (Habit): The habit to get the longest streak for.
+
+    Returns:
+        int: The longest streak of the habit.
+    """
+    return habit.streak()
 
 
-# Example of reduce for calculating the longest streak
-def longest_streak_using_reduce(habits):
-    """Demonstrates how reduce() can be used to find the habit with the longest streak."""
-    return reduce(lambda longest, habit: habit if habit.streak() > longest.streak() else longest, habits)
+
 

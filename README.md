@@ -1,6 +1,6 @@
 # Habit Tracker Application
 
-This project provides the core back-end functionality of a habit tracker.
+This application provides a Python-based backend functionality of a habit tracker.
 Users are able to create and manage their daily and weekly habits through a Command Line Interface (CLI). 
 
 ## What is it?
@@ -8,14 +8,15 @@ Users are able to create and manage their daily and weekly habits through a Comm
 The Habit Tracker allows users to:
 
 - Create and manage daily and weekly habits.
-- Mark habits as complete for the current day or week.
+- Mark habits as complete for the current day or calendar week.
+- Edit  the name and description of habits.
 - Track habit progress with a streak that shows how consistently the habit has been completed.
-- View analytical insights, such as the habit with the longest streak.
+- View analytic insights, such as the habit with the longest streak.
 - If a habit is not completed within the specified period, the streak is reset. 
 
-The application uses an SQLite database to save and load data. 
-
+The application uses an SQLite database to save and load data between sessions.  
 Users are able to interact with the CLI via Questionary.
+The application comes with five predefined habits for demonstration and testing purposes. 
 
 ## Installation
 
@@ -59,7 +60,7 @@ or other terminals with full console support.
 1. Open the Command Prompt: 
    - For Windows, press Win + R, type cmd, and hit Enter.
 
-2. Before running the app, ensure the Virtual Environment is active. 
+2. Ensure the Virtual Environment is active. 
 
 On Windows:
 
@@ -82,12 +83,14 @@ python main.py
 
 4. Follow the instructions on the screen to interact with the habit tracker.
 Use the arrow keys to navigate through the options and press Enter to confirm.
+Use the keyboard to enter text when prompted. 
 
 ## Testing
 
-To run tests for the Habit Tracker application
+To run tests for the Habit Tracker application, we use 'pytest'. Execute the following command:
 
 ```shell
-pytest . 
+pytest
 ```
-The tests include checks for creating and deleting habits, marking them as complete, and viewing streaks.
+The tests include checks for creating, editing and deleting habits, marking them as complete, and viewing streaks.
+The test file includes data for five predefined habits with tracking date for four weeks, which allows testing for streak logic and analytic functions.

@@ -1,6 +1,7 @@
 import sqlite3
 from habit import Habit
-from datetime import datetime
+from datetime import datetime, timedelta
+
 
 class Database:
     def __init__(self, db_name="habit_tracker.db"):
@@ -26,12 +27,13 @@ class Database:
         self.conn.commit()
 
     def habit_exists(self, name):
-        """Check if a habit with the given name exists in the database."""
-        cursor = self.conn.execute('SELECT id FROM habits WHERE name = ?', (name,))
+        """Check if a habit with the given name already exists in the database."""
+        cursor = self.conn.execute('SELECT id FROM habits WHERE LOWER(name) = ?', (name.lower(),))
         result = cursor.fetchone()
         return result is not None  # Returns True if the habit exists, False otherwise
 
     def save_habit(self, habit):
+        """Save the new habit into the database and return its automatically generated ID."""
         self.conn.execute('''INSERT INTO habits (name, description, periodicity, creation_date)
                                  VALUES (?, ?, ?, ?)''',
                           (habit.get_name(), habit.get_description(), habit.get_periodicity(),
@@ -44,6 +46,13 @@ class Database:
         """Saves the completion date for a specific habit in the completions table."""
         self.conn.execute('''INSERT INTO completions (habit_id, completion_date)
                              VALUES (?, ?)''', (habit_id, completion_date.strftime("%Y-%m-%d %H:%M:%S")))
+        self.conn.commit()
+
+    def update_habit(self, habit_id, new_name, new_description):
+        """Update the name and description of a habit in the database."""
+        self.conn.execute('''UPDATE habits
+                             SET name = ?, description = ?
+                             WHERE id = ?''', (new_name, new_description, habit_id))
         self.conn.commit()
 
     def load_habits(self):
@@ -82,46 +91,48 @@ class Database:
         return result[0] if result else None
 
     def insert_test_data(self):
-        # Insert sample data for habits
+        """Insert sample data for habits"""
+        base_date = datetime(2023, 9, 25)
         sample_data = {
             "Exercise": [
-                "2023-09-03 10:00:00",  # Correct consecutive weekly data
-                "2023-09-12 10:00:00",
-                "2023-09-19 10:00:00"
+                base_date - timedelta(weeks=3),
+                base_date - timedelta(weeks=2),
+                base_date - timedelta(weeks=1),
+                base_date
             ],
             "Read": [
-                "2023-09-15 10:00:00",  # Consecutive daily data
-                "2023-09-16 10:00:00",
-                "2023-09-17 10:00:00"
+                base_date - timedelta(days=i) for i in range(28)
             ],
             "Meditate": [
-                "2023-09-15 10:00:00",  # Consecutive daily data
-                "2023-09-16 10:00:00",
-                "2023-09-17 10:00:00"
-            ],
+                            base_date - timedelta(days=i + 1) for i in range(3)
+                        ] + [
+                            base_date - timedelta(days=5),
+                            base_date - timedelta(days=6)
+                        ],
             "Art Class": [
-                "2023-08-24 10:00:00",  # Correct consecutive weekly data
-                "2023-09-02 10:00:00",
-                "2023-09-10 10:00:00",
-                "2023-09-18 10:00:00"
+                base_date - timedelta(weeks=3) + timedelta(days=5),
+                base_date - timedelta(weeks=2) + timedelta(days=5),
+                base_date - timedelta(weeks=1) + timedelta(days=5),
+                base_date + timedelta(days=5)
             ],
             "Learn French": [
-                "2023-09-15 10:00:00",  # Consecutive daily data
-                "2023-09-16 10:00:00",
-                "2023-09-17 10:00:00"
+                base_date - timedelta(days=0),
+                base_date - timedelta(days=1),
+                base_date - timedelta(days=2),
+                base_date - timedelta(days=3)
             ]
         }
 
         for habit_name, dates in sample_data.items():
             habit_id = self.get_habit_id(habit_name)
             if habit_id is not None:
-                for date_str in dates:
-                    completion_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                for date in dates:
+                    completion_date = date
                     self.save_completion(habit_id, completion_date)
 
 
 def initialize_predefined_habits(db):
-    """Ensure predefined habits always exist in the database and load sample tracking data."""
+    """Initialize predefined habits in the database and load sample tracking data."""
 
     predefined_habits = [
         {"name": "Exercise", "description": "Weekly Exercise", "periodicity": "weekly"},
@@ -137,6 +148,8 @@ def initialize_predefined_habits(db):
             db.save_habit(Habit(habit["name"], habit["description"], habit["periodicity"]))
 
     db.insert_test_data()
+
+
 
 
 
