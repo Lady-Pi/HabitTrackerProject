@@ -1,5 +1,17 @@
 # Habit Tracker Application
 
+Course: Object Oriented and Functional Programming With Python (DLBDSOOFPP01)
+
+Task: Habit Tracker
+
+Student: Lisa van der Linden
+
+Matriculation 9218894
+
+BSc Applied Artifical Intelligence
+
+International University of Applied Sciences
+
 This application provides a Python-based backend functionality of a habit tracker.
 Users are able to create and manage their daily and weekly habits through a Command Line Interface (CLI). 
 
